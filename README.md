@@ -1,4 +1,4 @@
-# parquet-go-source 
+# parquet-go-source
 
 parquet-go-source is a source provider for parquet-go. Your source must implement ParquetFile interface:
 
@@ -13,14 +13,4 @@ type ParquetFile interface {
 }
 ```
 
-Now it supports:
-* Local
-* HDFS
-* S3 (by [shsing2000](https://github.com/shsing2000))
-* GCS (by [AOHUA](https://github.com/AOHUA))
-* MemoryFileSystem (by [daikokoro](https://github.com/daidokoro))
-* MemoryBuffer (by [pmalekn](https://github.com/pmalekn))
-* HTTP Multipart Request Body (by [mcgrawia](https://github.com/mcgrawia))
-* Azure Blobs (by [davigust](https://github.com/davigust))
-
-Thanks for all the contributors !
+Note: This is an aggressively slimmed version of [xitongsys' codebase](https://github.com/xitongsys/parquet-go-source)
