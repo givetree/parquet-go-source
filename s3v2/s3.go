@@ -1,6 +1,6 @@
 package s3v2
 
-//go:generate mockgen -destination=./mocks/mock_s3.go -package=mocks github.com/xitongsys/parquet-go-source/s3v2 S3API
+//go:generate mockgen -destination=./mocks/mock_s3.go -package=mocks github.com/shamaazi/parquet-go-source/s3v2 S3API
 
 import (
 	"context"
@@ -57,9 +57,9 @@ const (
 )
 
 var (
-	errWhence        = errors.New("Seek: invalid whence")
-	errInvalidOffset = errors.New("Seek: invalid offset")
-	errFailedUpload  = errors.New("Write: failed upload")
+	errWhence        = errors.New("seek: invalid whence")
+	errInvalidOffset = errors.New("seek: invalid offset")
+	errFailedUpload  = errors.New("write: failed upload")
 )
 
 // NewS3FileWriter creates an S3 FileWriter, to be used with NewParquetWriter
@@ -68,11 +68,15 @@ func NewS3FileWriter(
 	bucket string,
 	key string,
 	uploaderOptions []func(*manager.Uploader),
-	cfgs ...*aws.Config,
+	cfg *aws.Config,
 ) (source.ParquetFile, error) {
+	if cfg == nil {
+		defaultCfg := getConfig()
+		cfg = &defaultCfg
+	}
 	return NewS3FileWriterWithClient(
 		ctx,
-		s3.NewFromConfig(getConfig()),
+		s3.NewFromConfig(*cfg),
 		bucket,
 		key,
 		uploaderOptions,
@@ -101,8 +105,12 @@ func NewS3FileWriterWithClient(
 }
 
 // NewS3FileReader creates an S3 FileReader, to be used with NewParquetReader
-func NewS3FileReader(ctx context.Context, bucket string, key string, cfgs ...*aws.Config) (source.ParquetFile, error) {
-	return NewS3FileReaderWithClient(ctx, s3.NewFromConfig(getConfig()), bucket, key)
+func NewS3FileReader(ctx context.Context, bucket string, key string, cfg *aws.Config) (source.ParquetFile, error) {
+	if cfg == nil {
+		defaultCfg := getConfig()
+		cfg = &defaultCfg
+	}
+	return NewS3FileReaderWithClient(ctx, s3.NewFromConfig(*cfg), bucket, key)
 }
 
 // NewS3FileReaderWithClient is the same as NewS3FileReader but allows passing
@@ -320,15 +328,15 @@ func (s *S3File) openRead() error {
 		Key:    aws.String(s.Key),
 	}
 
-	hoo, err := s.client.HeadObject(s.ctx, hoi)
+	hoo, err := s.client.HeadObject(s.ctx, hoi, nil)
 	if err != nil {
 		return err
 	}
 
 	s.lock.Lock()
 	s.readOpened = true
-	if hoo.ContentLength != 0 {
-		s.fileSize = hoo.ContentLength
+	if *hoo.ContentLength != 0 {
+		s.fileSize = *hoo.ContentLength
 	}
 	s.lock.Unlock()
 
