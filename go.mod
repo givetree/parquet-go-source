@@ -1,4 +1,4 @@
-module github.com/shamaazi/parquet-go-source
+module github.com/givetree/parquet-go-source
 
 go 1.20
 
